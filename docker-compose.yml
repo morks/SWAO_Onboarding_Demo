@@ -1,7 +1,5 @@
 # SWAO STATE-04: Single-node Docker Compose — kein Kubernetes, kein Cluster-Orchestrator
 # SWAO TF-02: Public Docker Hub Images (postgres:15-alpine, node:20-alpine, nginx:alpine)
-version: '3.8'
-
 services:
   # SWAO TF-02: Public Docker Hub Image — nicht aus privater/sovereign Registry
   postgres:
