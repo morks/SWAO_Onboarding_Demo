@@ -1,0 +1,49 @@
+// Prisma Schema — Gewinnspiel Demo App
+// SWAO DATA: PII-Datenmodell — Name, Adresse, Geburtsdatum, Telefon ohne DSGVO-Löschendpoint
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id         Int      @id @default(autoincrement())
+  email      String   @unique
+  password   String   // bcrypt hash (SWAO CRYPTO-positive)
+  avatarHash String?  // MD5-Hash der E-Mail für Gravatar-Style (SWAO CRYPTO-weak)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  profile Profile?
+  entries SweepstakesEntry[]
+}
+
+// SWAO DATA: PII-Modell — DSGVO Art.17 Löschrecht nicht implementiert
+model Profile {
+  id          Int      @id @default(autoincrement())
+  userId      Int      @unique
+  firstName   String
+  lastName    String
+  dateOfBirth DateTime
+  phone       String?
+  street      String?
+  postalCode  String?
+  city        String?
+  country     String   @default("DE")
+  consent     Boolean  @default(false)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model SweepstakesEntry {
+  id         Int      @id @default(autoincrement())
+  userId     Int
+  campaignId String   @default("SUMMER2024")
+  enteredAt  DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
