@@ -1,6 +1,6 @@
 // SWAO TF-04: console.log/console.error statt strukturiertes Logging (pino/winston)
 // SWAO TF-05: Kein /health Endpoint implementiert
-import express from 'express';
+import express, { Application } from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import authRouter from './routes/auth';
@@ -9,7 +9,7 @@ import sweepstakesRouter from './routes/sweepstakes';
 
 dotenv.config();
 
-const app = express();
+const app: Application = express();
 const PORT = process.env.PORT || 4000;
 
 // Middleware

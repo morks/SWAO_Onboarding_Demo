@@ -1,4 +1,5 @@
 import { Router, Response } from 'express';
+import type { Router as RouterType } from 'express';
 import { PrismaClient } from '@prisma/client';
 import { requireAuth, AuthenticatedRequest } from '../middleware/auth';
 import { getStockPrice } from '../services/priceApi';
@@ -8,7 +9,7 @@ import { getStockPrice } from '../services/priceApi';
 // import csurf from 'csurf';
 // const csrfProtection = csurf({ cookie: true });
 
-const router = Router();
+const router: RouterType = Router();
 const prisma = new PrismaClient();
 
 /**

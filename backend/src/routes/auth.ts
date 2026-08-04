@@ -1,10 +1,11 @@
 import { Router, Request, Response } from 'express';
+import type { Router as RouterType } from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { PrismaClient } from '@prisma/client';
 import { generateAvatarHash } from '../services/avatar';
 
-const router = Router();
+const router: RouterType = Router();
 const prisma = new PrismaClient();
 
 /**
@@ -51,10 +52,11 @@ router.post('/register', async (req: Request, res: Response): Promise<void> => {
 
     const secret = process.env.JWT_SECRET_KEY!;
     // SWAO CRYPTO-JWT: HS256 (symmetrisch, kein RS256/ES256)
+    // expiresIn als Sekunden-Zahl (7 Tage) — vermeidet ms-StringValue Typ-Konflikt
     const token = jwt.sign(
       { userId: user.id, email: user.email },
       secret,
-      { algorithm: 'HS256', expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
+      { algorithm: 'HS256', expiresIn: 7 * 24 * 60 * 60 }
     );
 
     // SWAO TF-04: console.log statt strukturiertes Logging (pino/winston)
@@ -106,7 +108,7 @@ router.post('/login', async (req: Request, res: Response): Promise<void> => {
     const token = jwt.sign(
       { userId: user.id, email: user.email },
       secret,
-      { algorithm: 'HS256', expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
+      { algorithm: 'HS256', expiresIn: 7 * 24 * 60 * 60 }
     );
 
     console.log(`[AUTH] Benutzer angemeldet: ${email}`);
