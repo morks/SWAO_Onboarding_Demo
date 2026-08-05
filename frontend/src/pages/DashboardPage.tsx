@@ -1,5 +1,5 @@
-// SWAO DYN-05: Keine autocomplete-Attribute auf PII-Feldern — intentional
-// SWAO DATA: PII-Formular mit Name, Adresse, Geburtsdatum, Telefon
+// DYN-05 FIX: autocomplete-Attribute auf allen PII-Feldern
+// DATA FIX: DELETE /api/profile über AccountDeleteButton (DSGVO Art.17)
 import { useState, useEffect, FormEvent } from 'react';
 import {
   Trophy,
@@ -251,24 +251,24 @@ export function DashboardPage() {
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="input-label">Vorname *</label>
-                  {/* SWAO DYN-05: Kein autocomplete="given-name" — intentional */}
                   <input
                     type="text"
                     value={profile.firstName}
                     onChange={(e) => setProfile({ ...profile, firstName: e.target.value })}
                     placeholder="Max"
+                    autoComplete="given-name"
                     className="input-field"
                     required
                   />
                 </div>
                 <div>
                   <label className="input-label">Nachname *</label>
-                  {/* SWAO DYN-05: Kein autocomplete="family-name" — intentional */}
                   <input
                     type="text"
                     value={profile.lastName}
                     onChange={(e) => setProfile({ ...profile, lastName: e.target.value })}
                     placeholder="Mustermann"
+                    autoComplete="family-name"
                     className="input-field"
                     required
                   />
@@ -284,11 +284,11 @@ export function DashboardPage() {
                       Geburtsdatum *
                     </span>
                   </label>
-                  {/* SWAO DYN-05: Kein autocomplete="bday" — intentional */}
                   <input
                     type="date"
                     value={profile.dateOfBirth}
                     onChange={(e) => setProfile({ ...profile, dateOfBirth: e.target.value })}
+                    autoComplete="bday"
                     className="input-field"
                     required
                   />
@@ -300,12 +300,12 @@ export function DashboardPage() {
                       Telefon
                     </span>
                   </label>
-                  {/* SWAO DYN-05: Kein autocomplete="tel" — intentional */}
                   <input
                     type="tel"
                     value={profile.phone}
                     onChange={(e) => setProfile({ ...profile, phone: e.target.value })}
                     placeholder="+49 123 456789"
+                    autoComplete="tel"
                     className="input-field"
                   />
                 </div>
@@ -319,12 +319,12 @@ export function DashboardPage() {
                     Straße & Hausnummer
                   </span>
                 </label>
-                {/* SWAO DYN-05: Kein autocomplete="street-address" — intentional */}
                 <input
                   type="text"
                   value={profile.street}
                   onChange={(e) => setProfile({ ...profile, street: e.target.value })}
                   placeholder="Musterstraße 42"
+                  autoComplete="street-address"
                   className="input-field"
                 />
               </div>
@@ -332,23 +332,23 @@ export function DashboardPage() {
               <div className="grid grid-cols-3 gap-3">
                 <div>
                   <label className="input-label">PLZ</label>
-                  {/* SWAO DYN-05: Kein autocomplete="postal-code" — intentional */}
                   <input
                     type="text"
                     value={profile.postalCode}
                     onChange={(e) => setProfile({ ...profile, postalCode: e.target.value })}
                     placeholder="12345"
+                    autoComplete="postal-code"
                     className="input-field"
                   />
                 </div>
                 <div className="col-span-2">
                   <label className="input-label">Stadt</label>
-                  {/* SWAO DYN-05: Kein autocomplete="address-level2" — intentional */}
                   <input
                     type="text"
                     value={profile.city}
                     onChange={(e) => setProfile({ ...profile, city: e.target.value })}
                     placeholder="Berlin"
+                    autoComplete="address-level2"
                     className="input-field"
                   />
                 </div>

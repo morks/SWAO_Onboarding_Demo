@@ -3,24 +3,20 @@ import type { Router as RouterType } from 'express';
 import { PrismaClient } from '@prisma/client';
 import { requireAuth, AuthenticatedRequest } from '../middleware/auth';
 import { getStockPrice } from '../services/priceApi';
-
-// SWAO SBOM: csurf ist deprecated (letztes Release 2019, keine Security-Updates mehr)
-// Auskommentiert — würde als SBOM-Finding gemeldet werden
-// import csurf from 'csurf';
-// const csrfProtection = csurf({ cookie: true });
+import { logger } from '../lib/logger';
 
 const router: RouterType = Router();
 const prisma = new PrismaClient();
 
 /**
  * GET /api/sweepstakes/prize
- * Ruft den aktuellen Gewinn-Preis von Alphavantage ab.
+ * Gibt den aktuellen Gewinn-Preis zurück.
  *
- * SWAO EGR-01 CRITICAL: Egress zu api.alphavantage.co (non-sovereign US-API)
+ * EGR-01 FIX: Preis kommt jetzt aus sovereign In-Container-Simulation,
+ * kein externer Egress zu api.alphavantage.co mehr.
  */
 router.get('/prize', requireAuth, async (_req: AuthenticatedRequest, res: Response): Promise<void> => {
   try {
-    // SWAO EGR-01: Aufruf von api.alphavantage.co (US-hosted, non-sovereign)
     const priceData = await getStockPrice('MSFT');
 
     res.json({
@@ -31,11 +27,11 @@ router.get('/prize', requireAuth, async (_req: AuthenticatedRequest, res: Respon
         change: priceData.change,
         changePercent: priceData.changePercent,
         lastRefreshed: priceData.lastRefreshed,
-        source: 'alphavantage.co', // SWAO EGR-01: Explizite Quelle
+        source: priceData.source,
       },
     });
   } catch (err) {
-    console.error('[SWEEPSTAKES] Preis-API fehlgeschlagen:', err);
+    logger.error({ err }, 'Preis-Service fehlgeschlagen');
     res.status(500).json({ error: 'Preisdaten konnten nicht abgerufen werden.' });
   }
 });
@@ -43,19 +39,13 @@ router.get('/prize', requireAuth, async (_req: AuthenticatedRequest, res: Respon
 /**
  * POST /api/sweepstakes/enter
  * Nimmt am Gewinnspiel teil.
- *
- * SWAO SBOM: csurf-Schutz fehlt (deprecated package, auskommentiert)
  */
 router.post('/enter', requireAuth, async (req: AuthenticatedRequest, res: Response): Promise<void> => {
   const campaignId = req.body.campaignId || 'SUMMER2024';
 
   try {
-    // Prüfen ob bereits teilgenommen
     const existingEntry = await prisma.sweepstakesEntry.findFirst({
-      where: {
-        userId: req.userId!,
-        campaignId,
-      },
+      where: { userId: req.userId!, campaignId },
     });
 
     if (existingEntry) {
@@ -66,7 +56,6 @@ router.post('/enter', requireAuth, async (req: AuthenticatedRequest, res: Respon
       return;
     }
 
-    // Profil-Vollständigkeit prüfen
     const profile = await prisma.profile.findUnique({
       where: { userId: req.userId! },
     });
@@ -79,20 +68,17 @@ router.post('/enter', requireAuth, async (req: AuthenticatedRequest, res: Respon
     }
 
     const entry = await prisma.sweepstakesEntry.create({
-      data: {
-        userId: req.userId!,
-        campaignId,
-      },
+      data: { userId: req.userId!, campaignId },
     });
 
-    console.log(`[SWEEPSTAKES] Neue Teilnahme: User ${req.userId}, Kampagne ${campaignId}`);
+    logger.info({ userId: req.userId, campaignId }, 'Neue Gewinnspiel-Teilnahme');
 
     res.status(201).json({
       message: 'Erfolgreich am Gewinnspiel teilgenommen!',
       entry,
     });
   } catch (err) {
-    console.error('[SWEEPSTAKES] Teilnahme fehlgeschlagen:', err);
+    logger.error({ err, userId: req.userId }, 'Teilnahme fehlgeschlagen');
     res.status(500).json({ error: 'Teilnahme konnte nicht verarbeitet werden.' });
   }
 });
@@ -110,7 +96,7 @@ router.get('/entries', requireAuth, async (req: AuthenticatedRequest, res: Respo
 
     res.json({ entries });
   } catch (err) {
-    console.error('[SWEEPSTAKES] Einträge laden fehlgeschlagen:', err);
+    logger.error({ err, userId: req.userId }, 'Einträge laden fehlgeschlagen');
     res.status(500).json({ error: 'Teilnahmen konnten nicht geladen werden.' });
   }
 });

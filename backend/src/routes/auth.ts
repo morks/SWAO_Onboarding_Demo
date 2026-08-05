@@ -4,6 +4,7 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { PrismaClient } from '@prisma/client';
 import { generateAvatarHash } from '../services/avatar';
+import { logger } from '../lib/logger';
 
 const router: RouterType = Router();
 const prisma = new PrismaClient();
@@ -59,8 +60,7 @@ router.post('/register', async (req: Request, res: Response): Promise<void> => {
       { algorithm: 'HS256', expiresIn: 7 * 24 * 60 * 60 }
     );
 
-    // SWAO TF-04: console.log statt strukturiertes Logging (pino/winston)
-    console.log(`[AUTH] Neuer Benutzer registriert: ${email}`);
+    logger.info({ userId: user.id }, 'Neuer Benutzer registriert');
 
     res.status(201).json({
       token,
@@ -71,7 +71,7 @@ router.post('/register', async (req: Request, res: Response): Promise<void> => {
       },
     });
   } catch (err) {
-    console.error('[AUTH] Registrierung fehlgeschlagen:', err);
+    logger.error({ err }, 'Registrierung fehlgeschlagen');
     res.status(500).json({ error: 'Interner Serverfehler bei der Registrierung.' });
   }
 });
@@ -111,7 +111,7 @@ router.post('/login', async (req: Request, res: Response): Promise<void> => {
       { algorithm: 'HS256', expiresIn: 7 * 24 * 60 * 60 }
     );
 
-    console.log(`[AUTH] Benutzer angemeldet: ${email}`);
+    logger.info({ userId: user.id }, 'Benutzer angemeldet');
 
     res.json({
       token,
@@ -122,7 +122,7 @@ router.post('/login', async (req: Request, res: Response): Promise<void> => {
       },
     });
   } catch (err) {
-    console.error('[AUTH] Login fehlgeschlagen:', err);
+    logger.error({ err }, 'Login fehlgeschlagen');
     res.status(500).json({ error: 'Interner Serverfehler beim Login.' });
   }
 });

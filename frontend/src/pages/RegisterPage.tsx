@@ -1,4 +1,4 @@
-// SWAO DYN-05: Keine autocomplete-Attribute auf E-Mail/Passwort-Feldern — intentional
+// DYN-05 FIX: autocomplete-Attribute auf allen Eingabefeldern
 import { useState, FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Trophy, AlertCircle, CheckCircle } from 'lucide-react';
@@ -83,13 +83,13 @@ export function RegisterPage() {
 
             <div>
               <label htmlFor="email" className="input-label">E-Mail-Adresse</label>
-              {/* SWAO DYN-05: Kein autocomplete="email" — intentional */}
               <input
                 id="email"
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="ihre@email.de"
+                autoComplete="email"
                 className="input-field"
                 required
               />
@@ -97,13 +97,13 @@ export function RegisterPage() {
 
             <div>
               <label htmlFor="password" className="input-label">Passwort</label>
-              {/* SWAO DYN-05: Kein autocomplete="new-password" — intentional */}
               <input
                 id="password"
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Mindestens 8 Zeichen"
+                autoComplete="new-password"
                 className="input-field"
                 required
               />
@@ -116,13 +116,13 @@ export function RegisterPage() {
 
             <div>
               <label htmlFor="passwordConfirm" className="input-label">Passwort bestätigen</label>
-              {/* SWAO DYN-05: Kein autocomplete="new-password" — intentional */}
               <input
                 id="passwordConfirm"
                 type="password"
                 value={passwordConfirm}
                 onChange={(e) => setPasswordConfirm(e.target.value)}
                 placeholder="Passwort wiederholen"
+                autoComplete="new-password"
                 className="input-field"
                 required
               />

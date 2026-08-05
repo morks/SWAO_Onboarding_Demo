@@ -2,6 +2,7 @@ import { Router, Response } from 'express';
 import type { Router as RouterType } from 'express';
 import { PrismaClient } from '@prisma/client';
 import { requireAuth, AuthenticatedRequest } from '../middleware/auth';
+import { logger } from '../lib/logger';
 
 const router: RouterType = Router();
 const prisma = new PrismaClient();
@@ -29,7 +30,7 @@ router.get('/', requireAuth, async (req: AuthenticatedRequest, res: Response): P
       },
     });
   } catch (err) {
-    console.error('[PROFILE] Laden fehlgeschlagen:', err);
+    logger.error({ err, userId: req.userId }, 'Profil laden fehlgeschlagen');
     res.status(500).json({ error: 'Profil konnte nicht geladen werden.' });
   }
 });
@@ -37,21 +38,9 @@ router.get('/', requireAuth, async (req: AuthenticatedRequest, res: Response): P
 /**
  * PUT /api/profile
  * Erstellt oder aktualisiert das Profil des authentifizierten Benutzers.
- *
- * SWAO DATA: Speichert umfangreiche PII (Name, Adresse, Geburtsdatum, Telefon).
  */
 router.put('/', requireAuth, async (req: AuthenticatedRequest, res: Response): Promise<void> => {
-  const {
-    firstName,
-    lastName,
-    dateOfBirth,
-    phone,
-    street,
-    postalCode,
-    city,
-    country,
-    consent,
-  } = req.body;
+  const { firstName, lastName, dateOfBirth, phone, street, postalCode, city, country, consent } = req.body;
 
   if (!firstName || !lastName || !dateOfBirth) {
     res.status(400).json({ error: 'Vorname, Nachname und Geburtsdatum sind erforderlich.' });
@@ -86,15 +75,34 @@ router.put('/', requireAuth, async (req: AuthenticatedRequest, res: Response): P
       },
     });
 
-    console.log(`[PROFILE] Profil aktualisiert für User ${req.userId}`);
+    logger.info({ userId: req.userId }, 'Profil aktualisiert');
     res.json({ profile });
   } catch (err) {
-    console.error('[PROFILE] Speichern fehlgeschlagen:', err);
+    logger.error({ err, userId: req.userId }, 'Profil speichern fehlgeschlagen');
     res.status(500).json({ error: 'Profil konnte nicht gespeichert werden.' });
   }
 });
 
-// SWAO DATA (LLM): Kein DELETE /api/profile implementiert
-// DSGVO Art.17 "Recht auf Löschung" nicht erfüllt — intentional für SWAO-Finding
+/**
+ * DELETE /api/profile
+ * Löscht das Konto und alle zugehörigen Daten des authentifizierten Benutzers.
+ *
+ * DATA FIX: Implementiert DSGVO Art.17 "Recht auf Löschung" (Right to Erasure).
+ * Kaskadiert auf Profile und SweepstakesEntries (via Prisma onDelete: Cascade).
+ */
+router.delete('/', requireAuth, async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+  try {
+    // Prisma-Schema hat onDelete: Cascade — löscht Profile + Entries automatisch
+    await prisma.user.delete({
+      where: { id: req.userId! },
+    });
+
+    logger.info({ userId: req.userId }, 'Benutzer und alle Daten gelöscht (DSGVO Art.17)');
+    res.json({ message: 'Ihr Konto und alle zugehörigen Daten wurden gelöscht.' });
+  } catch (err) {
+    logger.error({ err, userId: req.userId }, 'Konto löschen fehlgeschlagen');
+    res.status(500).json({ error: 'Konto konnte nicht gelöscht werden.' });
+  }
+});
 
 export default router;

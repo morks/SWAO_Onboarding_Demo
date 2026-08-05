@@ -1,4 +1,4 @@
-// SWAO DYN-05: Keine autocomplete-Attribute auf E-Mail/Passwort-Feldern — intentional
+// DYN-05 FIX: autocomplete-Attribute auf allen Eingabefeldern
 import { useState, FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Trophy, AlertCircle } from 'lucide-react';
@@ -53,13 +53,13 @@ export function LoginPage() {
 
             <div>
               <label htmlFor="email" className="input-label">E-Mail-Adresse</label>
-              {/* SWAO DYN-05: Kein autocomplete="email" — intentional */}
               <input
                 id="email"
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="ihre@email.de"
+                autoComplete="email"
                 className="input-field"
                 required
               />
@@ -67,13 +67,13 @@ export function LoginPage() {
 
             <div>
               <label htmlFor="password" className="input-label">Passwort</label>
-              {/* SWAO DYN-05: Kein autocomplete="current-password" — intentional */}
               <input
                 id="password"
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
+                autoComplete="current-password"
                 className="input-field"
                 required
               />

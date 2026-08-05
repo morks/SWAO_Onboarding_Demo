@@ -1,9 +1,11 @@
-// SWAO EGR-01: Egress zu api.alphavantage.co — non-sovereign, US-hosted API
-// Diese Datei produziert intentional einen kritischen EGR-01 Finding für den SWAO-Scan
-// Alphavantage hat seinen Sitz in den USA — DSGVO/Sovereignty-Risiko für EU-Anwendungen
-import https from 'https';
-
-const ALPHAVANTAGE_BASE_URL = 'api.alphavantage.co'; // SWAO EGR-01: US-Domäne
+// EGR-01 FIX: Kein externer Egress mehr — sovereign In-Container-Mock
+// Vorher: https://api.alphavantage.co (US-gehostet, Cloud Act, non-sovereign)
+// Jetzt:  Deterministischer Preis-Simulator — kein Netzwerkaufruf
+//
+// Für Produktion ersetzen durch EU-sovereign Finanz-Datenprovider:
+//   - Deutsche Börse Xetra Market Data API (Frankfurt, EU)
+//   - Refinitiv Eikon EMEA (EU-Instanz)
+//   - Bloomberg B-PIPE EU (Frankfurter RZ)
 
 export interface PriceData {
   symbol: string;
@@ -11,84 +13,41 @@ export interface PriceData {
   change: string;
   changePercent: string;
   lastRefreshed: string;
+  source: string;
 }
 
+// Basiswerte für die Simulation (realistische Größenordnungen)
+const BASE_PRICES: Record<string, number> = {
+  MSFT: 417.00,
+  AMZN: 185.00,
+  NVDA: 875.00,
+  SAP:  178.00,  // EU-Titel als Beispiel
+  ALV:  263.00,  // Allianz SE
+};
+
 /**
- * Ruft den aktuellen Aktienpreis von Alphavantage ab.
+ * Gibt simulierte Kursdata zurück — vollständig in-container, kein externer Egress.
  *
- * SWAO EGR-01 CRITICAL: Egress zu api.alphavantage.co (US-gehostet, non-sovereign).
- * Für EU-Sovereignty muss dieser Aufruf durch einen EU-basierten Finanz-Datendienst ersetzt werden.
- *
- * @param symbol Aktien-Symbol (z.B. "MSFT", "AMZN")
+ * Simulation: sinusförmige Tagesbewegung ±2% um den Basiswert.
+ * In Produktion durch EU-sovereign API ersetzen.
  */
 export async function getStockPrice(symbol: string = 'MSFT'): Promise<PriceData> {
-  const apiKey = process.env.ALPHAVANTAGE_API_KEY || 'demo';
+  const basePrice = BASE_PRICES[symbol] ?? 100.00;
 
-  return new Promise((resolve, reject) => {
-    // SWAO EGR-01: HTTP-Egress zu api.alphavantage.co (non-sovereign US-API)
-    const path = `/query?function=GLOBAL_QUOTE&symbol=${symbol}&apikey=${apiKey}`;
+  // Deterministisch auf Basis der Tageszeit — sieht "live" aus, braucht kein Netzwerk
+  const now = Date.now();
+  const dayMs = 24 * 60 * 60 * 1000;
+  const dayFraction = (now % dayMs) / dayMs;
+  const variation = Math.sin(dayFraction * Math.PI * 2) * basePrice * 0.02;
+  const price = basePrice + variation;
+  const changePercent = (variation / basePrice) * 100;
 
-    const options = {
-      hostname: ALPHAVANTAGE_BASE_URL, // SWAO EGR-01: api.alphavantage.co
-      path,
-      method: 'GET',
-    };
-
-    const req = https.request(options, (res) => {
-      let data = '';
-      res.on('data', (chunk) => { data += chunk; });
-      res.on('end', () => {
-        try {
-          const parsed = JSON.parse(data);
-          const quote = parsed['Global Quote'];
-
-          if (!quote || !quote['05. price']) {
-            // Fallback-Daten wenn API-Limit erreicht (demo key)
-            resolve({
-              symbol: symbol,
-              price: '417.88',
-              change: '+2.34',
-              changePercent: '0.56%',
-              lastRefreshed: new Date().toISOString().split('T')[0],
-            });
-            return;
-          }
-
-          resolve({
-            symbol: quote['01. symbol'],
-            price: parseFloat(quote['05. price']).toFixed(2),
-            change: quote['09. change'],
-            changePercent: quote['10. change percent'],
-            lastRefreshed: quote['07. latest trading day'],
-          });
-        } catch {
-          reject(new Error('Fehler beim Parsen der Alphavantage-Antwort'));
-        }
-      });
-    });
-
-    req.on('error', () => {
-      // Graceful fallback bei Netzwerkfehler
-      resolve({
-        symbol: symbol,
-        price: '417.88',
-        change: '+2.34',
-        changePercent: '0.56%',
-        lastRefreshed: new Date().toISOString().split('T')[0],
-      });
-    });
-
-    req.setTimeout(5000, () => {
-      req.destroy();
-      resolve({
-        symbol: symbol,
-        price: '417.88',
-        change: '+2.34',
-        changePercent: '0.56%',
-        lastRefreshed: new Date().toISOString().split('T')[0],
-      });
-    });
-
-    req.end();
-  });
+  return {
+    symbol,
+    price: price.toFixed(2),
+    change: (variation >= 0 ? '+' : '') + variation.toFixed(2),
+    changePercent: (changePercent >= 0 ? '+' : '') + changePercent.toFixed(2) + '%',
+    lastRefreshed: new Date().toISOString().split('T')[0],
+    source: 'sovereign-simulation', // TODO Produktion: EU-Finanz-Datenprovider
+  };
 }
