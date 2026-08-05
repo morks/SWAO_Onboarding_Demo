@@ -66,7 +66,7 @@ ALPHAVANTAGE_API_KEY=demo
 
 BACKEND_PORT=4000
 FRONTEND_PORT=3000
-NODE_ENV=development
+NODE_ENV=production
 EOF
 success ".env erstellt"
 
