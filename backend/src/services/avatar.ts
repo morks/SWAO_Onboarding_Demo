@@ -1,17 +1,12 @@
-// SWAO CRYPTO-weak: MD5 wird für Gravatar-Hash verwendet
-// MD5 ist kryptographisch gebrochen (Kollisionsangriffe möglich, 2004 nachgewiesen)
-// Für Demo-Zwecke intentional — SWAO sollte createHash('md5') als schwache Kryptographie flaggen
+// Avatar-Hash-Service — SHA-256 für Gravatar-kompatible URLs
 import { createHash } from 'crypto';
 
 /**
- * Generiert einen Gravatar-kompatiblen MD5-Hash der E-Mail-Adresse.
- *
- * SWAO CRYPTO-weak: Verwendung von MD5 — schwacher Hash-Algorithmus.
- * Empfehlung für Produktion: SHA-256 oder SHA-3.
+ * Generiert einen SHA-256-Hash der E-Mail-Adresse für Gravatar-kompatible Avatar-URLs.
+ * SHA-256 ist kollisionsresistent und NIST-empfohlen (FIPS 180-4).
  */
 export function generateAvatarHash(email: string): string {
-  // SWAO CRYPTO-weak: MD5 (kryptographisch gebrochen)
-  return createHash('md5')
+  return createHash('sha256')
     .update(email.trim().toLowerCase())
     .digest('hex');
 }

@@ -1,6 +1,4 @@
-// EGR-01 FIX: Kein externer Egress mehr — sovereign In-Container-Mock
-// Vorher: https://api.alphavantage.co (US-gehostet, Cloud Act, non-sovereign)
-// Jetzt:  Deterministischer Preis-Simulator — kein Netzwerkaufruf
+// Sovereign In-Container Price Simulation — kein externer Netzwerkzugriff
 //
 // Für Produktion ersetzen durch EU-sovereign Finanz-Datenprovider:
 //   - Deutsche Börse Xetra Market Data API (Frankfurt, EU)
@@ -16,25 +14,21 @@ export interface PriceData {
   source: string;
 }
 
-// Basiswerte für die Simulation (realistische Größenordnungen)
 const BASE_PRICES: Record<string, number> = {
   MSFT: 417.00,
   AMZN: 185.00,
   NVDA: 875.00,
-  SAP:  178.00,  // EU-Titel als Beispiel
-  ALV:  263.00,  // Allianz SE
+  SAP:  178.00,
+  ALV:  263.00,
 };
 
 /**
- * Gibt simulierte Kursdata zurück — vollständig in-container, kein externer Egress.
- *
+ * Gibt simulierte Kursdaten zurück — vollständig in-container, kein externer Egress.
  * Simulation: sinusförmige Tagesbewegung ±2% um den Basiswert.
- * In Produktion durch EU-sovereign API ersetzen.
  */
 export async function getStockPrice(symbol: string = 'MSFT'): Promise<PriceData> {
   const basePrice = BASE_PRICES[symbol] ?? 100.00;
 
-  // Deterministisch auf Basis der Tageszeit — sieht "live" aus, braucht kein Netzwerk
   const now = Date.now();
   const dayMs = 24 * 60 * 60 * 1000;
   const dayFraction = (now % dayMs) / dayMs;
@@ -48,6 +42,6 @@ export async function getStockPrice(symbol: string = 'MSFT'): Promise<PriceData>
     change: (variation >= 0 ? '+' : '') + variation.toFixed(2),
     changePercent: (changePercent >= 0 ? '+' : '') + changePercent.toFixed(2) + '%',
     lastRefreshed: new Date().toISOString().split('T')[0],
-    source: 'sovereign-simulation', // TODO Produktion: EU-Finanz-Datenprovider
+    source: 'sovereign-simulation',
   };
 }

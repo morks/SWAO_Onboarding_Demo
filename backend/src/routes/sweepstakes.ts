@@ -10,10 +10,7 @@ const prisma = new PrismaClient();
 
 /**
  * GET /api/sweepstakes/prize
- * Gibt den aktuellen Gewinn-Preis zurück.
- *
- * EGR-01 FIX: Preis kommt jetzt aus sovereign In-Container-Simulation,
- * kein externer Egress zu api.alphavantage.co mehr.
+ * Gibt den aktuellen Gewinn-Preis zurück (sovereign in-container simulation).
  */
 router.get('/prize', requireAuth, async (_req: AuthenticatedRequest, res: Response): Promise<void> => {
   try {

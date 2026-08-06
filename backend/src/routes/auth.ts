@@ -12,10 +12,7 @@ const prisma = new PrismaClient();
 /**
  * POST /api/auth/register
  * Registriert einen neuen Benutzer.
- *
- * SWAO CRYPTO-positive: bcrypt.hash mit cost factor 12
- * SWAO CRYPTO-weak: generateAvatarHash verwendet MD5 (siehe avatar.ts)
- * SWAO CRYPTO-JWT: jwt.sign mit HS256 (symmetrisch)
+ * Passwort-Hashing: bcrypt cost factor 12.
  */
 router.post('/register', async (req: Request, res: Response): Promise<void> => {
   const { email, password } = req.body;
@@ -40,7 +37,6 @@ router.post('/register', async (req: Request, res: Response): Promise<void> => {
     // SWAO CRYPTO-positive: bcrypt mit hohem Cost Factor 12
     const hashedPassword = await bcrypt.hash(password, 12);
 
-    // SWAO CRYPTO-weak: MD5 für Avatar-Hash (intentional — siehe avatar.ts)
     const avatarHash = generateAvatarHash(email);
 
     const user = await prisma.user.create({
