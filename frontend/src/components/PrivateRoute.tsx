@@ -1,4 +1,4 @@
-import { Navigate } from 'react-router-dom';
+import { Redirect } from 'wouter';
 import { useAuth } from '../contexts/AuthContext';
 
 interface PrivateRouteProps {
@@ -20,7 +20,7 @@ export function PrivateRoute({ children }: PrivateRouteProps) {
   }
 
   if (!user) {
-    return <Navigate to="/login" replace />;
+    return <Redirect to="/login" />;
   }
 
   return <>{children}</>;

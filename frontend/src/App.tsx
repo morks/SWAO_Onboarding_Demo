@@ -1,5 +1,5 @@
-// DYN-08 FIX: Cookie-Consent-Banner implementiert
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+// DYN-08: Cookie-Consent-Banner implementiert
+import { Switch, Route, Redirect } from 'wouter';
 import { AuthProvider } from './contexts/AuthContext';
 import { PrivateRoute } from './components/PrivateRoute';
 import { Layout } from './components/Layout';
@@ -11,30 +11,24 @@ import { DashboardPage } from './pages/DashboardPage';
 export default function App() {
   return (
     <AuthProvider>
-      <BrowserRouter>
-        <Routes>
-          {/* Öffentliche Routen */}
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/registrieren" element={<RegisterPage />} />
+      <Switch>
+        {/* Öffentliche Routen */}
+        <Route path="/login"><LoginPage /></Route>
+        <Route path="/registrieren"><RegisterPage /></Route>
 
-          {/* Geschützte Routen */}
-          <Route
-            path="/dashboard"
-            element={
-              <PrivateRoute>
-                <Layout>
-                  <DashboardPage />
-                </Layout>
-              </PrivateRoute>
-            }
-          />
+        {/* Geschützte Routen */}
+        <Route path="/dashboard">
+          <PrivateRoute>
+            <Layout>
+              <DashboardPage />
+            </Layout>
+          </PrivateRoute>
+        </Route>
 
-          {/* Redirect */}
-          <Route path="/" element={<Navigate to="/dashboard" replace />} />
-          <Route path="*" element={<Navigate to="/dashboard" replace />} />
-        </Routes>
-        <CookieConsent />
-      </BrowserRouter>
+        {/* Catch-all: Redirect zum Dashboard */}
+        <Route><Redirect to="/dashboard" /></Route>
+      </Switch>
+      <CookieConsent />
     </AuthProvider>
   );
 }

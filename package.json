@@ -1,0 +1,12 @@
+{
+  "name": "gewinnspiel-demo",
+  "version": "1.0.0",
+  "description": "Accenture SWAO Demo App — Gewinnspiel-Registrierung",
+  "private": true,
+  "scripts": {
+    "setup": "chmod +x setup.sh && ./setup.sh"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}

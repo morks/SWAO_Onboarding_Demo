@@ -1,5 +1,5 @@
 import { ReactNode } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useLocation } from 'wouter';
 import { Trophy, User, LogOut, Shield } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -9,7 +9,7 @@ interface LayoutProps {
 
 export function Layout({ children }: LayoutProps) {
   const { user, logout } = useAuth();
-  const navigate = useNavigate();
+  const [, navigate] = useLocation();
 
   const handleLogout = () => {
     logout();
@@ -58,12 +58,10 @@ export function Layout({ children }: LayoutProps) {
       </main>
 
       {/* Footer */}
-      {/* SWAO DYN-08: Kein Cookie-Consent-Banner — intentional für SWAO-Finding */}
       <footer className="bg-white border-t border-gray-200 mt-auto">
         <div className="max-w-5xl mx-auto px-4 py-4 flex flex-col sm:flex-row items-center justify-between gap-2">
           <div className="flex items-center gap-1.5 text-xs text-gray-500">
             <Shield className="w-3.5 h-3.5" />
-            {/* SWAO DYN-08: Footer erwähnt DSGVO aber kein Cookie-Banner vorhanden */}
             <span>Datenschutz gemäß DSGVO · Impressum</span>
           </div>
           <span className="text-xs text-gray-400">© 2024 Gewinnspiel Demo GmbH</span>

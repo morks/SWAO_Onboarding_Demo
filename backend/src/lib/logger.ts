@@ -1,5 +1,5 @@
-// TF-04 FIX: Strukturiertes Logging mit pino (ersetzt console.log)
-// pino schreibt JSON-Logs — kompatibel mit cloud-nativen Log-Aggregatoren
+// Strukturiertes JSON-Logging mit pino — TF-04
+// Kompatibel mit cloud-nativen Log-Aggregatoren
 // (Azure Monitor, AWS CloudWatch, Google Cloud Logging, ELK)
 import pino from 'pino';
 

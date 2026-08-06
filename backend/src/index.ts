@@ -1,5 +1,5 @@
-// TF-04 FIX: Strukturiertes Logging via pino (kein console.log mehr)
-// TF-05 FIX: /health Endpoint für K8s Liveness/Readiness Probes
+// Strukturiertes Logging via pino — TF-04
+// /health Endpoint für Liveness/Readiness Probes — TF-05
 import express, { Application } from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
